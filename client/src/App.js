@@ -1,19 +1,31 @@
 import React, { Component } from 'react';
+import axios from 'axios';
+
 import './App.css';
+import BooksList from './components/BooksList';
+const SERVER_URL = "http://localhost:8000";
 
 class App extends Component {
+
+    constructor(props){
+        super(props);
+        this.state = {
+            books: []
+        };
+    }
+
+  componentDidMount(){
+    axios.get(SERVER_URL + "/books").then(response => {
+        if(response.data.hasOwnProperty("result")) {
+            this.setState({
+                books: response.data.result
+            });
+        }
+    });
+  }
+
   render() {
-    return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <h1 className="App-title">Welcome to React</h1>
-        </header>
-        <p className="App-intro">
-          To get started, edit <code>src/App.js</code> and save to reload.
-        </p>
-      </div>
-    );
+    return <BooksList books={this.state.books} />;
   }
 }
 

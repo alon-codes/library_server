@@ -7,19 +7,24 @@ require('dotenv').load();
 const app = express();
 const port = process.env.PORT;
 
+// TODO: make this shit pretty
+app.use(require("cors")());
+
 app.get("/books", function (req, res) {
-   res.send([
-       {
-           author: "JK Rolling",
-           date: new Date(),
-           title: "Harry Potter"
-       },
-       {
-           author: "C. S. Lewis",
-           date: new Date(),
-           title: "Narnia"
-       }
-   ])
+   res.send({
+       result: [
+            {
+               author: "JK Rolling",
+               date: new Date(),
+               title: "Harry Potter"
+            },
+            {
+               author: "C. S. Lewis",
+               date: new Date(),
+               title: "Narnia"
+            }
+       ]
+   });
 });
 
 app.listen(port, function () {
