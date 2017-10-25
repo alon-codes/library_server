@@ -4,6 +4,18 @@ import ReactDOM from 'react-dom';
 // Loads bootstrap css
 import 'bootstrap/dist/css/bootstrap.css';
 
-import App from './App';
+import "./App.css";
 
-ReactDOM.render(<App />, document.getElementById('root'));
+import App from './components/App';
+import { Provider } from "mobx-react";
+import BooksStore from "./stores/BooksStore";
+
+const stores = {
+    BooksStore
+};
+
+ReactDOM.render((
+    <Provider {...stores}>
+        <App />
+    </Provider>
+), document.getElementById('root'));

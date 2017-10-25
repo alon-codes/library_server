@@ -1,26 +1,39 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
+import {
+    Card,
+    CardText,
+    CardBody,
+    CardTitle,
+    CardSubtitle
+} from 'reactstrap';
+import {formatDate} from "../Helpers";
+import EditBook from "./buttons/EditBook";
 
 export default class BookItem extends Component {
 
-    propTypes = {
+    static propTypes = {
         author: PropTypes.string.isRequired,
-        date: PropTypes.instanceOf(Date),
-        title: PropTypes.string.isRequired
+        date: PropTypes.string.isRequired,
+        title: PropTypes.string.isRequired,
+        onEdit: PropTypes.func.isRequired
     };
 
     render(){
 
-        const { title, date, author } = this.props;
+        const { title, date, author, onEdit } = this.props;
         // TODO: convert date object to pretty string
-        const dateStr = "22/10/2017";
+        const dateStr = formatDate(new Date(date));
 
         return (
-            <div className="row">
-                <div className="col-xs-4">{title}</div>
-                <div className="col-xs-4">{dateStr}</div>
-                <div className="col-xs-4">{author}</div>
-            </div>
+            <Card className="book-item">
+                <CardBody>
+                    <CardTitle className="book-title">{title}</CardTitle>
+                    <CardSubtitle className="book-author">{author}</CardSubtitle>
+                    <CardText className="book-data">{dateStr}</CardText>
+                    <EditBook onClick={onEdit} />
+                </CardBody>
+            </Card>
         )
     }
 }
