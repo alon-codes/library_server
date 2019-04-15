@@ -1,9 +1,39 @@
 import React, {Component} from 'react';
-import { Input, FormGroup, Form, Label, Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 import PropTypes from 'prop-types';
+import Grid from '@material-ui/core/Grid';
+import Button from '@material-ui/core/Button';
+import Modal from '@material-ui/core/Modal';
 
 import {formatDate, isValidDateStr} from "../Helpers";
 import {inject, observer} from "mobx-react";
+import { Paper } from '@material-ui/core';
+import { withStyles } from "@material-ui/core/styles";
+
+const getModalStyle = () => {
+    const top = 50;
+    const left = 50;
+
+    return {
+        top: `${top}%`,
+        left: `${left}%`,
+        transform: `translate(-${top}%, -${left}%)`,
+    };
+};
+
+const styles = theme => ({
+    paper: {
+        position: 'absolute',
+        width: theme.spacing.unit * 100,
+        height: 500,
+        display: 'flex',
+        backgroundColor: theme.palette.background.paper,
+        boxShadow: theme.shadows[5],
+        paddingLeft: theme.spacing.unit * 4,
+        paddingRight: theme.spacing.unit * 4,
+        paddingTop: theme.spacing.unit * 2,
+        paddingBottom: theme.spacing.unit * 2,
+    },
+});
 
 class BookModal extends Component {
     constructor(props){
@@ -12,8 +42,8 @@ class BookModal extends Component {
         const { BooksStore } = this.props;
 
         this.state = {
-            isOpen: BooksStore.isOpen,
-            currentBook: this.props.BooksStore.currentBook,
+            isOpen: false,
+            currentBook: null,
             errors: this.props.errors,
             titleError: "",
             dateError: ""
@@ -24,12 +54,23 @@ class BookModal extends Component {
         this.handleTitleChange = this.handleTitleChange.bind(this);
     }
 
-    componentWillReceiveProps(nextProps){
-        console.log(nextProps);
+    static getDerivedStateFromProps(nextProps, prevState){
+        let nextState = {};
+        const { BooksStore } = nextProps;
+        
+        // Extract value from the observable
+        const isOpen = BooksStore.isOpen.get();
+        const currentBook = BooksStore.currentBook.get();
 
-        this.setState({
-            currentBook: nextProps.BooksStore.currentBook
-        });
+        if(isOpen !== prevState.isOpen){
+            nextState.isOpen = isOpen;
+        }
+
+        if(currentBook !== prevState.currentBook){
+            nextState.currentBook = currentBook;
+        }
+
+        return nextState;
     }
 
     save(){
@@ -90,24 +131,18 @@ class BookModal extends Component {
     }
 
     render(){
-        console.log(this.props.BooksStore.isOpen);
 
+        console.log(`Modal received store props`,this.props.BooksStore);
         const {
             titleError,
-            dateError
+            dateError,
+            isOpen,
+            currentBook = { date: new Date(), title: "" }
         } = this.state;
 
+        const { date,title } = this.state.currentBook;
 
-        const {
-            isOpen
-        } = this.props.BooksStore;
-
-        const {
-            date,
-            title
-        } = this.state.currentBook;
-
-        const dateStr = formatDate(new Date(date));
+        const dateStr = formatDate(date);
 
         let titleErrorEle = null;
         let dateErrorEle = null;
@@ -118,30 +153,27 @@ class BookModal extends Component {
         if(dateError.length > 0)
             dateErrorEle = <span>{ dateError }</span>;
 
+        console.log(`Modal opening status: ${isOpen}`);
+
         return (
-            <Modal isOpen={isOpen.get()}>
-                <ModalHeader>Edit book title</ModalHeader>
-                <ModalBody>
-                    <Form>
-                        <FormGroup>
-                            <Label for="title">Title</Label>
-                            <input value={title} onChange={this.handleTitleChange} name="title" id="title" placeholder="Name the book" />
-                            { titleErrorEle }
-                        </FormGroup>
-                        <FormGroup>
-                            <Label for="date">Date</Label>
-                            <input value={dateStr} onChange={this.handleDateChange} type="text" id="date" name="date" placeholder="dd/mm/yyyy" />
-                            { dateErrorEle }
-                        </FormGroup>
-                    </Form>
-                </ModalBody>
-                <ModalFooter>
-                    <Button color="alert" onClick={this.save}>Save</Button>{' '}
-                    <Button color="secondary" onClick={this.close.bind(this)}>Cancel</Button>
-                </ModalFooter>
+            <Modal open={isOpen}>
+                <div style={getModalStyle()} className={this.props.classes.paper}>
+                    <Grid container>
+                        <Grid item>
+                            Edit book title
+                        </Grid>                    
+                        <input value={title} onChange={this.handleTitleChange} name="title" id="title" placeholder="Name the book" />
+                        { titleErrorEle }
+                        <input value={dateStr} onChange={this.handleDateChange} type="text" id="date" name="date" placeholder="dd/mm/yyyy" />
+                        { dateErrorEle }
+                        <Button onClick={this.save}>Save</Button>{' '}
+                        <Button onClick={this.close.bind(this)}>Cancel</Button>
+                    </Grid>
+                </div>
             </Modal>
-        )
+        );
     }
 }
 
-export default inject("BooksStore")(observer(BookModal));
+const modalWithStore = inject("BooksStore")(observer(BookModal));
+export default withStyles(styles)(modalWithStore);

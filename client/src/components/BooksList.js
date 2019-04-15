@@ -1,18 +1,13 @@
 import React, {Component} from 'react';
-import PropTypes from 'prop-types';
-import { Button } from "reactstrap";
-
 import BookItem from './BookItem';
-import BookModal from './BookModal';
-import { isValidDateStr } from "../Helpers";
+import Grid from '@material-ui/core/Grid';
 
 import {inject, observer} from 'mobx-react';
+import { withStyles } from '@material-ui/core';
 
 class BooksList extends Component {
     constructor(props){
         super(props);
-
-        const { BooksStore } = this.props;
 
         this.state = {
             books: this.props.BooksStore.books
@@ -44,13 +39,13 @@ class BooksList extends Component {
         const dateObj = new Date(date);
 
         return (
-            <div key={Math.random()} className="col-lg-3 col-md-4 col-sm-6">
+            <Grid xs={12} md={4} sm={6} item key={Math.random()}>
                 <BookItem
                     onEdit={() => this.openEditBox(singleBook)}
                     author={author}
                     title={title}
                     date={date} />
-            </div>
+            </Grid>
         );
     }
 
@@ -58,12 +53,13 @@ class BooksList extends Component {
         const elements = this.state.books.map(this.handleSingleBook);
 
         return (
-            <div className="row">
+            <Grid spacing={16} container>
                 { elements }
-                <BookModal />
-            </div>
+            </Grid>
         );
     }
 }
 
-export default inject("BooksStore")(observer(BooksList));
+const booksListWithStore = inject("BooksStore")(observer(BooksList));
+
+export default booksListWithStore;

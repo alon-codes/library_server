@@ -1,14 +1,11 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
-import {
-    Card,
-    CardText,
-    CardBody,
-    CardTitle,
-    CardSubtitle
-} from 'reactstrap';
+import Card from '@material-ui/core/Card';
+import CardActions from '@material-ui/core/CardActions';
+import CardContent from '@material-ui/core/CardContent';
 import {formatDate} from "../Helpers";
 import EditBook from "./buttons/EditBook";
+import Typography from '@material-ui/core/Typography';
 
 export default class BookItem extends Component {
 
@@ -27,12 +24,14 @@ export default class BookItem extends Component {
 
         return (
             <Card className="book-item">
-                <CardBody>
-                    <CardTitle className="book-title">{title}</CardTitle>
-                    <CardSubtitle className="book-author">{author}</CardSubtitle>
-                    <CardText className="book-data">{dateStr}</CardText>
-                    <EditBook onClick={onEdit} />
-                </CardBody>
+                <CardContent>
+                    <Typography>{title}</Typography>
+                    <Typography>{author}</Typography>
+                    <Typography>{dateStr}</Typography>
+                    <CardActions>
+                        <EditBook onClick={onEdit} />
+                    </CardActions>
+                </CardContent>
             </Card>
         )
     }

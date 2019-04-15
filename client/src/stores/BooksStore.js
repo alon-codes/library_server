@@ -1,23 +1,16 @@
-import { observable, runInAction, action } from 'mobx';
+import { observable, runInAction, action, transaction } from 'mobx';
 import axios from 'axios';
 import { SERVER_URL } from "../Config";
 
 class BooksStore {
     books = observable([]);
-    isOpen = observable(false);
-    currentBook = observable({});
+    isOpen = observable.box(false);
+    currentBook = observable.map({});
 
     constructor(){
         this.getData();
     }
 
-    /**
-     * Sort books will sort all the
-     * elements by the book id
-     * @param b1
-     * @param b2
-     * @returns {number}
-     */
     static sortBooks(b1, b2){
         return b1.bookId.localeCompare(b2.bookId);
     }
@@ -25,10 +18,10 @@ class BooksStore {
     /**
      * Making request to the server
      */
-    getData() {
+    getData = () => {
         axios.get(SERVER_URL + "/books").then(res => {
             if (res.data.hasOwnProperty("result")) {
-                runInAction(() => {
+                transaction(() => {
                     const sortedBooks = res.data.result.sort(BooksStore.sortBooks);
                     this.books.replace(sortedBooks);
                 });
@@ -44,21 +37,22 @@ class BooksStore {
         return sameTitleIndex < 0;
     }
 
-    editBook(book){
+    editBook = (book) => {
         if(book.bookId.length === 0)
             return this.addNewBook(book.title, book.date);
 
         const bookIndex = this.books.findIndex((b) => b.bookId === book.bookId);
-        runInAction(() => {
+        transaction(() => {
             this.books[bookIndex] = book;
             this.isOpen = observable(false);
         });
     }
 
-    editMode(book){
-        runInAction(() => {
+    editMode = (book) => {
+        transaction(() => {
             this.isOpen.set(true);
-            this.currentBook = book;
+            this.currentBook.replace(book);
+            console.log(`Entering book edit mode - see object -`, this.isOpen);
         });
     }
 
@@ -85,4 +79,7 @@ class BooksStore {
     }
 }
 
-export default new BooksStore();
+const store = new BooksStore();
+window.store = store
+
+export default store;
