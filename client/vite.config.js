@@ -8,11 +8,5 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 3000,
-  },
-  build: {
-    target: 'esnext'
-  },
-  esbuild: {
-    loader: "jsx",
-  }  
+  }
 })

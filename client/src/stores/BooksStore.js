@@ -12,7 +12,7 @@ class BooksStore {
     }
 
     static sortBooks(b1, b2){
-        return b1.bookId.localeCompare(b2.bookId);
+        return b1.id.localeCompare(b2.id);
     }
 
     /**
@@ -29,19 +29,19 @@ class BooksStore {
         });
     }
 
-    isTitleExists(title, bookId){
+    isTitleExists(title, id){
         const sameTitleIndex = this.books.findIndex((b) => {
-            return b.title === title && b.bookId !== bookId
+            return b.title === title && b.id !== id
         });
 
         return sameTitleIndex < 0;
     }
 
     editBook = (book) => {
-        if(book.bookId.length === 0)
-            return this.addNewBook(book.title, book.date);
+        if(book.id.length === 0)
+            return this.addNewBook(book.title, book.publication_date);
 
-        const bookIndex = this.books.findIndex((b) => b.bookId === book.bookId);
+        const bookIndex = this.books.findIndex((b) => b.id === book.id);
         transaction(() => {
             this.books[bookIndex] = book;
             this.isOpen = observable(false);
@@ -62,10 +62,10 @@ class BooksStore {
 
     addNewBook(bookTitle, bookDate){
         const booksArrLength = this.books.length;
-        const lastBookId = this.books[booksArrLength - 1].bookId;
+        const lastBookId = this.books[booksArrLength - 1].id;
 
         const nBook = {
-            bookId: parseInt(lastBookId) + 1,
+            id: parseInt(lastBookId) + 1,
             date: bookDate,
             title: bookTitle
         };

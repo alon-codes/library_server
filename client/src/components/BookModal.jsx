@@ -54,13 +54,13 @@ const BookModal = observer(({ store, classes }) => {
             isValid = false;
         }
 
-        if (currentBook.date.length <= 0) {
+        if (currentBook.publication_date.length <= 0) {
             setState(prevState => ({
                 ...prevState,
                 dateError: "Date can't be empty"
             }));
             isValid = false;
-        } else if (!isValidDateStr(currentBook.date)) {
+        } else if (!isValidDateStr(currentBook.publication_date)) {
             setState(prevState => ({
                 ...prevState,
                 dateError: "Date is not matching the format dd/mm/yyyy"
