@@ -1,20 +1,20 @@
-import { Entity, Column, PrimaryGeneratedColumn, ObjectIdColumn } from 'typeorm';
+import { Entity, Column, ObjectIdColumn } from 'typeorm';
 
 @Entity()
 export class Book {
   @ObjectIdColumn()
   id: number;
 
-  @Column()
+  @Column({ nullable: false })
   title: string;
 
-  @Column()
+  @Column({ nullable: false })
   author: string;
 
-  @Column()
+  @Column({ nullable: false })
   ISBN: string;
 
-  @Column()
+  @Column({ default: new Date(), nullable: false })
   publication_date: Date;
 
   @Column({ default: 1 })

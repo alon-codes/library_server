@@ -1,32 +1,18 @@
-export default {
-    assetsDir: "static",
-    base: "/",
-    build: {
-      optimizeDeps: {
-        include: ["dep-a"]
-      }
-    },
-    define: {
-      __FOO__: "foo"
-    },
-    history: "hash",
-    hmr: true,
+
+
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+// https://vitejs.dev/config/
+export default defineConfig({
+  plugins: [react()],
+  server: {
     port: 3000,
-    srcDir: "src",
-    plugins: [
-      require("vite-plugin-react"),
-      require("vite-plugin-sass"),
-      require("vite-plugin-pwa")
-    ],
-    rollupInputOptions: {
-      external: (id) => /^[^.]/.test(id),
-      treeshake: {
-        moduleSideEffects: false
-      }
-    },
-    rollupOutputOptions: {
-      globals: {
-        react: "React"
-      }
-    }
-  };
+  },
+  build: {
+    target: 'esnext'
+  },
+  esbuild: {
+    loader: "jsx",
+  }  
+})

@@ -18,6 +18,7 @@ const BooksRepository = AppDataSource.getRepository(Book);
 app.get("/books", async function (req: Request, res: Response) {
     try {
         const booksList = await BooksRepository.find();
+        console.log({ booksList });
         return res.send(booksList);
     }
     catch(e){
