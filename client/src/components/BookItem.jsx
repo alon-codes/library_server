@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
@@ -23,13 +22,6 @@ const BookItem = ({title, date, author, onEdit}) => {
       </CardContent>
     </Card>
   );
-};
-
-BookItem.propTypes = {
-  author: PropTypes.string.isRequired,
-  date: PropTypes.string.isRequired,
-  title: PropTypes.string.isRequired,
-  onEdit: PropTypes.func.isRequired
 };
 
 export default BookItem;

@@ -1,14 +1,18 @@
-import { observable, runInAction, action, transaction } from 'mobx';
+import { observable, runInAction, transaction } from 'mobx';
 import axios from 'axios';
 import { SERVER_URL } from "../Config";
+import { makeAutoObservable } from "mobx"
 
 class BooksStore {
     books = observable([]);
     isOpen = observable.box(false);
-    currentBook = observable.map({});
+    currentBook = observable.map({
+        title: "",
+        id: ""
+    });
 
     constructor(){
-        this.getData();
+        makeAutoObservable(this);
     }
 
     static sortBooks(b1, b2){
@@ -20,11 +24,8 @@ class BooksStore {
      */
     getData = () => {
         axios.get(SERVER_URL + "/books").then(res => {
-            if (res.data.hasOwnProperty("result")) {
-                transaction(() => {
-                    const sortedBooks = res.data.result.sort(BooksStore.sortBooks);
-                    this.books.replace(sortedBooks);
-                });
+            if (!!res.data && !!res.data.length) {
+                this.books.replace(res.data);
             }
         });
     }
@@ -38,29 +39,28 @@ class BooksStore {
     }
 
     editBook = (book) => {
-        if(book.id.length === 0)
-            return this.addNewBook(book.title, book.publication_date);
-
-        const bookIndex = this.books.findIndex((b) => b.id === book.id);
-        transaction(() => {
-            this.books[bookIndex] = book;
-            this.isOpen = observable(false);
-        });
+        if(book.id.length === 0){
+            this.createBook(book);
+        } else {
+            const bookIndex = this.books.findIndex((b) => b.id === book.id);
+            transaction(() => {
+                this.books[bookIndex] = book;
+                this.isOpen = observable(false);
+            });
+        }
     }
 
     editMode = (book) => {
-        transaction(() => {
-            this.isOpen.set(true);
-            this.currentBook.replace(book);
-            console.log(`Entering book edit mode - see object -`, this.isOpen);
-        });
+        this.isOpen.set(true);
+        this.currentBook.replace(book);
+        console.log(`Entering book edit mode - see object -`, this.isOpen);
     }
 
     exitEditMode(){
         this.isOpen.set(false);
     }
 
-    addNewBook(bookTitle, bookDate){
+    createBook(bookTitle, bookDate){
         const booksArrLength = this.books.length;
         const lastBookId = this.books[booksArrLength - 1].id;
 
@@ -70,16 +70,18 @@ class BooksStore {
             title: bookTitle
         };
 
-        runInAction(() => {
-            this.books.replace(this.books.push(nBook));
-        });
+        
 
         this.editMode(nBook);
 
+        axios.post(SERVER_URL + "/books", { bookTitle, bookDate,  }).then(res => {
+            if (!!res.data && !!res.data.length) {
+                runInAction(() => {
+                    this.books.replace(this.books.push(res.data));
+                });
+            }
+        });
     }
 }
 
-const store = new BooksStore();
-window.store = store
-
-export default store;
+export default BooksStore;
