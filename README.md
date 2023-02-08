@@ -2,7 +2,7 @@
 Simple library app with crud options.
 
 ## Client
-Made with React & Mobx using create-react-app.
+Made with React, Material UI, Mobx, and Vite.
 
 ## Server
-Staticly served json file using express
+Nest.js, Prisma, MongoDB
