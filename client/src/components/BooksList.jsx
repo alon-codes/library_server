@@ -7,7 +7,7 @@ import Grid from '@mui/material/Grid';
 const BooksList = observer(({ store }) => {
     console.log({ books: store.books })
     return (
-        <Grid container>
+        <Grid container spacing={1}>
             {store.books.map(({ id, title, author, publication_date, ...singleBook }) => (
                 <Grid xs={12} md={4} sm={6} item key={id}>
                     <BookItem

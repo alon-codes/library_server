@@ -12,7 +12,7 @@ const BookModal = observer(({ store, classes }) => {
     const [titleError, setTitleError] = useState("");
     const [dateError, setDateError] = useState("");
 
-    const save = () => {
+    const save = React.useCallback(() => {
         let currentBook = {};
 
         let isValid = true;
@@ -35,7 +35,7 @@ const BookModal = observer(({ store, classes }) => {
 
         if (isValid)
             store.editBook(currentBook);
-    };
+    });
 
     const handleTitleChange = React.useCallback((e) => {
         let nVal = e.target.value;
