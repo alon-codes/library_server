@@ -1,83 +1,116 @@
-import React from 'react';
-import { useState } from 'react';
-import Grid from '@mui/material/Grid';
-import Button from '@mui/material/Button';
-import Modal from '@mui/material/Modal';
+import React from "react";
+import { useState } from "react";
+import Grid from "@mui/material/Grid";
+import Button from "@mui/material/Button";
+import Modal from "@mui/material/Modal";
+import Backdrop from "@mui/material/Backdrop";
 import { formatDate, isValidDateStr } from "../Helpers";
-import { observer } from "mobx-react";
+import { observer } from "mobx-react-lite";
+import { MobileDatePicker } from "@mui/x-date-pickers";
+import TextField from "@mui/material/TextField";
+import { Stack } from "@mui/system";
+import { Typography } from "@mui/material";
+import { Box } from "@mui/system";
+import { runInAction } from 'mobx';
 
 const BookModal = observer(({ store, classes }) => {
-    const [title, setTitle] = useState(store.currentBook.title);
-    const [date, setDate] = useState(store.currentBook.publication_date);
-    const [titleError, setTitleError] = useState("");
-    const [dateError, setDateError] = useState("");
+  console.log({ store });
+  const [titleError, setTitleError] = useState("");
+  const [dateError, setDateError] = useState("");
 
-    const save = React.useCallback(() => {
-        let currentBook = {};
+  const save = () => {
 
-        let isValid = true;
+    let isValid = true;
 
-        if (currentBook.title.length <= 0) {
-            setTitleError("Title can\'t be empty");
-            isValid = false;
-        } else if (BooksStore.isTitleExists(currentBook.title)) {
-            setTitleError("Title already exists, try another");
-            isValid = false;
-        }
+    if (store.currentBook?.title?.length <= 0) {
+      setTitleError("Title can't be empty");
+      isValid = false;
+    }
 
-        if (currentBook.publication_date.length <= 0) {
-            setDateError("Date can't be empty")
-            isValid = false;
-        } else if (!isValidDateStr(currentBook.publication_date)) {
-            setDateError("Date is not matching the format dd/mm/yyyy");
-            isValid = false;
-        }
+    if (store.currentBook?.publication_date?.length <= 0) {
+      setDateError("Date can't be empty");
+      isValid = false;
+    }
 
-        if (isValid)
-            store.editBook(currentBook);
-    });
+    if (isValid) store.saveBook(store.currentBook);
+  };
 
-    const handleTitleChange = React.useCallback((e) => {
-        let nVal = e.target.value;
+  const handleClose = () => {
+    store.isOpen.set(false)
+    setTitleError("");
+    setDateError("");
+  };
 
-        if (nVal.length === 0)
-            nVal = "";
-
-        setTitle(nVal);
-    });
-
-    const handleDateChange = e => {
-        let nVal = e.currentTarget.value;
-        console.log({ nVal });
-        setDate(new Date(nVal));
-    };
-
-    const close = () => {
-        store.exitEditMode();
-    };
-
-    const dateStr = !!date ? formatDate(date) : '';
-
-    return (
-        <Modal open={store.isOpen.get()}>
-            <Grid container>
-                <Grid item>
-                    Edit book title
-                </Grid>
-                <input value={title} onChange={handleTitleChange} name="title" id="title" placeholder="Name the book" />
-                {titleError.length && (
-                    <span>{titleError}</span>
-                )}
-                <input value={date} onChange={handleDateChange} type="date" id="date" name="date" />
-                {dateError.length && (
-                    <span>{dateError}</span>
-                )}
-                <Button onClick={save}>Save</Button>
-                <Button onClick={close}>Cancel</Button>
-            </Grid>
-        </Modal>
-    );
-
+  return (
+    <Modal
+      aria-labelledby="transition-modal-title"
+      aria-describedby="transition-modal-description"
+      open={store.isOpen.get() || false}
+      onClose={handleClose}
+    >
+      <Stack
+        sx={{ backgroundColor: "#fff", height: "100vh" }}
+        padding={2}
+        spacing={3}
+      >
+        <Typography variant="h5">Edit book</Typography>
+        <TextField
+          inputProps={{
+            value: store.currentBook.title
+          }}
+          onChange={e => runInAction(() => { store.currentBook.title = e.target.value })}
+          name="title"
+          id="title"
+          label="Title"
+          variant="outlined"
+          placeholder="Name the book"
+          error={!!titleError}
+        />
+        <TextField
+          inputProps={{
+            value: store.currentBook.author
+          }}
+          onChange={e => runInAction(() => { store.currentBook.author = e.target.value })}
+          name="author"
+          id="author"
+          label="Author"
+          variant="outlined"
+          placeholder="Author name"
+          error={store.currentBook?.author?.length === 0}
+        />
+        {titleError.length ? <span>{titleError}</span> : null}
+        <MobileDatePicker
+          disableToolbar
+          variant="inline"
+          format="dd/MM/yyyy"
+          renderInput={(props) => <TextField variant="outlined" {...props} />}
+          margin="normal"
+          id="date-picker-inline"
+          label="Publication date"
+          value={store.currentBook.publication_date}
+          maxDate={new Date()}
+          onChange={(d) => runInAction(() => { store.currentBook.publication_date = d })}
+          KeyboardButtonProps={{
+            "aria-label": "change date",
+          }}
+        />
+        {dateError.length ? <span>{dateError}</span> : null}
+        <Stack justifyContent="space-around" flexDirection="row">
+            <Button fullWidth variant="outlined" color="primary" onClick={save}>
+              Save
+            </Button>
+            <Button
+              fullWidth
+              variant="outlined"
+              color="secondary"
+              onClick={handleClose}
+            >
+              Cancel
+            </Button>
+        </Stack>
+      </Stack>
+    </Modal>
+  );
 });
 
 export default BookModal;

@@ -5,16 +5,14 @@ import BookItem from './BookItem';
 import Grid from '@mui/material/Grid';
 
 const BooksList = observer(({ store }) => {
-    console.log({ books: store.books })
+    console.log({ books: store.books });
     return (
         <Grid container spacing={1}>
-            {store.books.map(({ id, title, author, publication_date, ...singleBook }) => (
-                <Grid xs={12} md={4} sm={6} item key={id}>
+            {store.books.map((singleBook) => (
+                <Grid xs={12} md={4} sm={6} item key={singleBook.id}>
                     <BookItem
-                        onEdit={() => store.editMode(singleBook)}
-                        author={author}
-                        title={title}
-                        date={publication_date} />
+                        store={store}
+                        {...singleBook} />
                 </Grid>
             ))}
         </Grid>

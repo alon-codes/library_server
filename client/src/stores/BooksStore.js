@@ -2,14 +2,25 @@ import { observable, runInAction, transaction } from 'mobx';
 import axios from 'axios';
 import { SERVER_URL } from "../Config";
 import { makeAutoObservable } from "mobx"
+import { getBooks } from '../Api';
+import format from 'date-fns/format';
+import parseISO from 'date-fns/parseISO';
+import {updateBook, deleteBook} from '../Api';
+
+const DEFAULT_BOOK = {
+    id: "",
+    title: "",
+    author: "",
+    publication_date: new Date()
+};
 
 class BooksStore {
+    
     books = observable([]);
+    
     isOpen = observable.box(false);
-    currentBook = observable.map({
-        title: "",
-        id: ""
-    });
+
+    currentBook = observable(DEFAULT_BOOK, {deep: true});
 
     constructor(){
         makeAutoObservable(this);
@@ -22,64 +33,75 @@ class BooksStore {
     /**
      * Making request to the server
      */
-    getData = () => {
-        axios.get(SERVER_URL + "/books").then(res => {
-            if (!!res.data && !!res.data.length) {
-                this.books.replace(res.data);
+    async getData(){
+        try {
+            const result = await getBooks();
+            if(!!result?.data?.length){
+                runInAction(() => {
+                    this.books.replace(result.data.map((currenBook) => ({
+                        ...currenBook,
+                        publication_date: parseISO(currenBook.publication_date)
+                    })));
+                });
             }
-        });
+        }
+        catch(e){
+            console.error("Store::getData", { e })
+        }
     }
 
-    isTitleExists(title, id){
-        const sameTitleIndex = this.books.findIndex((b) => {
-            return b.title === title && b.id !== id
-        });
-
-        return sameTitleIndex < 0;
-    }
-
-    editBook = (book) => {
-        if(book.id.length === 0){
-            this.createBook(book);
+    async saveBook(draft){
+        if(draft?.id?.length === 0){
+            this.createBook(draft);
         } else {
-            const bookIndex = this.books.findIndex((b) => b.id === book.id);
+            const bookIndex = this.books.findIndex((b) => b.id === draft.id);
             transaction(() => {
-                this.books[bookIndex] = book;
-                this.isOpen = observable(false);
+                const prev = [...this.books];
+                console.log({ prev, draft });
+                prev[bookIndex] = draft;
+                this.books = prev;
+                
+            });
+            await updateBook(draft);
+        }
+
+        runInAction(() => {
+            this.isOpen.set(false);
+        });
+    }
+
+    editMode = (id) => {
+        transaction(() => {
+            const b = this.books.find(book => book.id === id);
+            console.log({ b });
+            this.currentBook = {...this.currentBook, ...b};
+
+            this.isOpen.set(true);
+            console.log(`Entering book edit mode - see object -`, this.isOpen);
+        });
+    }
+
+    async deleteBook(id){
+        this.books.replace(this.books.filter(curBook => curBook.id !== id));
+        await deleteBook(id);
+    }
+
+    async createBook(bookObj){
+        const res = await axios.post(SERVER_URL + "/books", { ...bookObj, id: undefined });
+        if (!!res.data) {
+            runInAction(() => {
+                this.books = [
+                    ...this.books,
+                    { ...res.data, publication_date: parseISO(res.data.publication_date) }
+                ];
             });
         }
     }
 
-    editMode = (book) => {
-        this.isOpen.set(true);
-        this.currentBook.replace(book);
-        console.log(`Entering book edit mode - see object -`, this.isOpen);
-    }
-
-    exitEditMode(){
-        this.isOpen.set(false);
-    }
-
-    createBook(bookTitle, bookDate){
-        const booksArrLength = this.books.length;
-        const lastBookId = this.books[booksArrLength - 1].id;
-
-        const nBook = {
-            id: parseInt(lastBookId) + 1,
-            date: bookDate,
-            title: bookTitle
-        };
-
-        
-
-        this.editMode(nBook);
-
-        axios.post(SERVER_URL + "/books", { bookTitle, bookDate,  }).then(res => {
-            if (!!res.data && !!res.data.length) {
-                runInAction(() => {
-                    this.books.replace(this.books.push(res.data));
-                });
-            }
+    newBook = () => {
+        transaction(() => {
+            this.currentBook = {...DEFAULT_BOOK};
+            this.isOpen.set(true);
         });
     }
 }

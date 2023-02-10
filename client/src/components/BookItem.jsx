@@ -8,23 +8,21 @@ import ModeEditIcon from '@mui/icons-material/ModeEdit';
 import Button from '@mui/material/Button';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import Stack from '@mui/material/Stack';
+import format from 'date-fns/format'
 
-const BookItem = ({ title, date, author, onEdit }) => {
-
-  const dateStr = formatDate(new Date(date));
-
+const BookItem = ({ id, title, publication_date, author, store }) => {
   return (
     <Card className="book-item">
       <CardContent>
         <Typography textAlign="left" variant="h6">{title}</Typography>
         <Typography textAlign="left" variant="body1">{author}</Typography>
-        <Typography textAlign="left" variant="body2">{dateStr}</Typography>
+        <Typography textAlign="left" variant="body2">{!!publication_date ? format(publication_date, 'dd/MM/yyyy') : "N/A"}</Typography>
         <CardActions>
           <Stack alignItems="space-between" flexDirection="row">
-            <Button fullWidth startIcon={<ModeEditIcon />} onClick={onEdit}>
+            <Button fullWidth startIcon={<ModeEditIcon />} onClick={e => store.editMode(id)}>
               Edit
             </Button>
-            <Button fullWidth startIcon={<DeleteForeverIcon />} onClick={onEdit}>
+            <Button fullWidth startIcon={<DeleteForeverIcon />} onClick={e => store.deleteBook(id)}>
               Delete
             </Button>
           </Stack>
